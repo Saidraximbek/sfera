@@ -1,12 +1,17 @@
+import { useGlobalContext } from "../hooks/useGlobalContext";
 import { Navigate } from "react-router-dom";
+const ProtectedRoutes = ({ children }) => {
+  const { user, isAuthReady } = useGlobalContext();
 
-function ProtectedRoutest({ user, children }) {
-  if (user) {
-    return children;
-  } else{
-       return <Navigate to="/login"/>
-
+  if (!isAuthReady) {
+    return <div>Loading...</div>;
   }
-}
 
-export default ProtectedRoutest;
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+export default ProtectedRoutes;

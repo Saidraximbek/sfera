@@ -1,44 +1,62 @@
-import { Link } from "react-router-dom";
-import FormInput from "../components/FormInput";
-import { useLogin } from "../hooks/useLogin";
+import { useState } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebase/config";
+import { useGlobalContext } from "../hooks/useGlobalContext";
+import { useNavigate } from "react-router-dom";
 
-function Login() {
-  const { isPending, login } = useLogin(); // register o‘rniga login
+const Login = () => {
+  const [email, setEmail] = useState("admin@gmail.com");
+  const [password, setPassword] = useState("11111111");
+  const [error, setError] = useState(null);
 
-  function handleSubmit(e) {
+  const { dispatch } = useGlobalContext();
+  const navigate = useNavigate();  // useNavigate hook to redirect
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const formData = new FormData(e.target);
-    const email = formData.get("email");
-    const password = formData.get("password");
-    login(email, password); // register o‘rniga login
-  }
+    setError(null);
+    try {
+      // Firebase orqali tizimga kirish
+      const res = await signInWithEmailAndPassword(auth, email, password);
+
+      // Kirish muvaffaqiyatli bo'lsa, foydalanuvchini contextga yuborish
+      dispatch({ type: "LOGIN", payload: res.user });
+
+      // Foydalanuvchini Home sahifasiga yo'naltirish
+      navigate("/home");
+
+    } catch (err) {
+      setError("Login failed: " + err.message);  // Xatolikni ko'rsatish
+    }
+  };
 
   return (
-    <section>
-      <div className="h-screen grid grid-cols-1 md:grid-cols-2">
-        <div className="login-register-left-section hidden md:flex"></div>
-        <div className="grid place-items-center login-register-left-section md:bg-none">
-          <div className="absolute left-0 top-0 bottom-0 w-full bg-black opacity-50 z-10 md:hidden"></div>
-          <form onSubmit={handleSubmit} className="w-96 relative z-20">
-            <h2 className="text-3xl text-center mb-5 font-bold text-white md:text-black">
-              Login
-            </h2>
-            <FormInput label="Email:" name="email" type="email" />
-            <FormInput label="Password:" name="password" type="password" />
-            <div className="flex items-center gap-5 mt-8 mb-8">
-              <button
-                type="submit"
-                className="btn btn-primary grow"
-                disabled={isPending}
-              >
-                {isPending ? "Yuklanmoqda..." : "Login"}
-              </button>
-            </div>
-          </form>
+    <div>
+      <h2>Login</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Email"
+            required
+          />
         </div>
-      </div>
-    </section>
+        <div>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="Password"
+            required
+          />
+        </div>
+        <button type="submit">Login</button>
+      </form>
+      {error && <p>{error}</p>}
+    </div>
   );
-}
+};
 
 export default Login;
