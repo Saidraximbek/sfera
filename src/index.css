@@ -1,3 +1,4 @@
+
 /* montserrat-regular - latin */
 @font-face {
   font-display: swap; /* Check https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face/font-display for other options. */
@@ -23,10 +24,12 @@
   src: url('./fonts/montserrat-v29-latin-700.woff2') format('woff2'); /* Chrome 36+, Opera 23+, Firefox 39+, Safari 12+, iOS 10+ */
 }
 
+@import "tailwindcss";
+
 *, *::after, *::before {
-  margin: 0;
-  padding: 0;
+
   box-sizing: border-box;
+  
 }
 
 a {
@@ -53,4 +56,38 @@ html {
 
 body {
   font-family: 'Montserrat';
+  width: 100vw;
+  height: 100vh;
+  overflow-x: hidden;
+  
+}
+
+.sfera-logo {
+  font-style: italic;
+}
+
+.rounded-active {
+  border-radius: 0 8px 8px 0;
+  border-left: 6px solid green;
+}
+.rounded-noactive {
+  border-radius: 0 8px 8px 0;
+  border-left: 6px solid transparent;
+}
+
+.transition-sidebar {
+  transition: 0.8s;
+}
+
+.rounded-sidebar {
+  border-radius: 0 12px 12px 0;
+}
+
+.main-layout {
+  background-image: url("./images/bgSfera.jpg");
+
+}
+
+.main-main {
+  overflow-y: scroll;
 }

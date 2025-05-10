@@ -14,21 +14,28 @@ import MainLayout from "./layout/MainLayout";
 
 import Home from "./pages/Home";
 import Login from "./pages/Login";
+import Teachers from "./pages/Teachers";
+import Lessons from "./pages/Lessons";
+import Students from "./pages/Students";
+import Confirm from "./pages/Confirm";
+
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Stil faylini ham qo‘shish zarur
+import StudentPage from "./pages/StudentPage";
 
 function App() {
   const { user, dispatch, isAuthReady } = useGlobalContext();
 
- useEffect(() => {
-  const unsubscribe = onAuthStateChanged(auth, (user) => {
-    if (user) {
-      dispatch({ type: "LOGIN", payload: user });
-    }
-    dispatch({ type: "AUTH_READY" });
-  });
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        dispatch({ type: "LOGIN", payload: user });
+      }
+      dispatch({ type: "AUTH_READY" });
+    });
 
-  return () => unsubscribe();
-}, [dispatch]);
-
+    return () => unsubscribe();
+  }, [dispatch]);
 
   if (!isAuthReady) return <div>Loading...</div>;
 
@@ -36,14 +43,38 @@ function App() {
     {
       path: "/",
       element: (
-        <ProtectedRoutest user={user}>
+        <ProtectedRoutest>
           <MainLayout />
         </ProtectedRoutest>
       ),
       children: [
         {
-          path: "/home",
+          index: true,
+          element: <Navigate to="home" />,
+        },
+        {
+          path: "home",
           element: <Home />,
+        },
+        {
+          path: "/teachers",
+          element: <Teachers />,
+        },
+        {
+          path: "/lessons",
+          element: <Lessons />,
+        },
+        {
+          path: "/students",
+          element: <Students />,
+        },
+        {
+          path: "/confirm",
+          element: <Confirm />,
+        },
+        {
+          path: "/student/:id",
+          element: <StudentPage />,
         },
       ],
     },
@@ -53,7 +84,23 @@ function App() {
     },
   ]);
 
-  return <RouterProvider router={routes} />;
+  return (
+    <>
+      <RouterProvider router={routes} />
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </>
+  );
 }
 
 export default App;

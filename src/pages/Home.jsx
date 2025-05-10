@@ -1,8 +1,11 @@
 import React from 'react'
-
+import AddStudent from '../components/AddStudent'
 const Home = () => {
   return (
-    <div>Home</div>
+    <div>
+
+      <AddStudent />
+    </div>
   )
 }
 
