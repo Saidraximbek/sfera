@@ -3,6 +3,9 @@ import { NavLink } from "react-router-dom";
 import { IoHomeOutline } from "react-icons/io5";
 import { MdSubject } from "react-icons/md";
 import { GiTeacher } from "react-icons/gi";
+import { MdGroups } from "react-icons/md";
+import { GiConfirmed } from "react-icons/gi";
+import { MdOutlinePersonOff } from "react-icons/md";
 
 const Sidebar = () => {
   return (
@@ -38,8 +41,8 @@ const Sidebar = () => {
           }
         >
           <li className="flex items-center gap-3 text-2xl">
-            <MdSubject className="text-2xl" />
-            <span className="hidden sm:inline">Fanlar</span>
+            <GiTeacher className="text-2xl" />
+            <span className="hidden sm:inline">Xodimlar</span>
           </li>
         </NavLink>
 
@@ -52,8 +55,8 @@ const Sidebar = () => {
           }
         >
           <li className="flex items-center gap-3 text-2xl">
-            <GiTeacher className="text-2xl" />
-            <span className="hidden sm:inline">O'qituvchilar</span>
+            <MdGroups className="text-2xl" />
+            <span className="hidden sm:inline">Guruxlar</span>
           </li>
         </NavLink>
 
@@ -66,7 +69,7 @@ const Sidebar = () => {
           }
         >
           <li className="flex items-center gap-3 text-2xl">
-            <GiTeacher className="text-2xl" />
+            <GiConfirmed className="text-2xl" />
             <span className="hidden sm:inline">O'quvchilar</span>
           </li>
         </NavLink>
@@ -80,7 +83,7 @@ const Sidebar = () => {
           }
         >
           <li className="flex items-center gap-3 text-2xl">
-            <GiTeacher className="text-2xl" />
+            <MdOutlinePersonOff className="text-2xl" />
             <span className="hidden sm:inline">Tasdiqlanmagan</span>
           </li>
         </NavLink>

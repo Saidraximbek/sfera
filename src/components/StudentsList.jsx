@@ -1,239 +1,299 @@
 import { useEffect, useState } from "react";
 import {
   collection,
-  getDocs,
-  doc,
   deleteDoc,
+  doc,
   setDoc,
+  onSnapshot,
   updateDoc,
 } from "firebase/firestore";
 import { db } from "../firebase/config";
-import { toast } from "react-toastify"; 
-import "react-toastify/dist/ReactToastify.css"; 
+import { toast } from "react-toastify";
 
-const Loader = () => (
-  <div className="flex justify-center items-center py-16">
-    <div className="w-12 h-12 border-4 border-t-4 border-blue-500 rounded-full animate-spin"></div>
-  </div>
-);
-
-const StudentsList = () => {
+export default function StudentsList() {
   const [students, setStudents] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [editingStudent, setEditingStudent] = useState(null);
-  const [editedFullName, setEditedFullName] = useState("");
-  const [editedSubject, setEditedSubject] = useState("");
-  const [editedPhone, setEditedPhone] = useState("");
+  const [editingStudentId, setEditingStudentId] = useState(null);
+  const [editedData, setEditedData] = useState({
+    fullName: "",
+    subject: "",
+    phone: "",
+  });
+  const [subjects, setSubjects] = useState([]);
+  const [selectedTeacher, setSelectedTeacher] = useState("");
+  const [lessonTime, setLessonTime] = useState(""); // New
+  const [teacherSchedule, setTeacherSchedule] = useState([]); // To store selected teacher's schedule
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [currentStudent, setCurrentStudent] = useState(null);
 
-  const subjects = [
-    "Koreys tili",
-    "Ingliz tili",
-    "Arab tili",
-    "Matematika",
-    "Ingliz tili KIDS",
-    "Biologiya",
-    "Nemis tili",
-    "Kompyuter savodxonligi", 
-    "Frontend",               
-    "Backend",                
-  ];
-
-  const fetchStudents = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "students"));
-      const data = querySnapshot.docs.map((doc) => ({
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "students"), (snapshot) => {
+      const studentsData = snapshot.docs.map((doc) => ({
         id: doc.id,
         ...doc.data(),
       }));
-      setStudents(data);
-      setLoading(false);
+      setStudents(studentsData);
+    });
+
+    const unsubscribeSubjects = onSnapshot(collection(db, "subjects"), (snapshot) => {
+      const subjectsData = snapshot.docs.map((doc) => doc.data());
+      setSubjects(subjectsData);
+    });
+
+    return () => {
+      unsubscribe();
+      unsubscribeSubjects();
+    };
+  }, []);
+
+  const handleDelete = async (id) => {
+    const confirm = window.confirm("Haqiqatan ham o‘chirmoqchimisiz?");
+    if (!confirm) return;
+
+    try {
+      await deleteDoc(doc(db, "students", id));
+      toast.success("O‘quvchi o‘chirildi!");
     } catch (error) {
-      console.error("Ma’lumotlarni olishda xatolik:", error);
-      toast.error("Ma’lumotlarni olishda xatolik!", {
-        style: { fontSize: "16px" }, 
-      });
+      toast.error("Xatolik yuz berdi!");
     }
   };
 
   const handleEdit = (student) => {
-    setEditingStudent(student);
-    setEditedFullName(student.fullName);
-    setEditedSubject(student.subject);
-    setEditedPhone(student.phone);
+    setEditingStudentId(student.id);
+    setEditedData({
+      fullName: student.fullName,
+      subject: student.subject,
+      phone: student.phone,
+    });
   };
 
-  const handleSave = async () => {
+  const handleSaveEdit = async (id) => {
     try {
-      if (editingStudent) {
-        await updateDoc(doc(db, "students", editingStudent.id), {
-          fullName: editedFullName,
-          subject: editedSubject,
-          phone: editedPhone,
-        });
-
-        setStudents((prev) =>
-          prev.map((student) =>
-            student.id === editingStudent.id
-              ? {
-                  ...student,
-                  fullName: editedFullName,
-                  subject: editedSubject,
-                  phone: editedPhone,
-                }
-              : student
-          )
-        );
-        setEditingStudent(null);
-        toast.success("O'quvchi ma'lumotlari saqlandi!", {
-          style: { fontSize: "16px" }, 
-        });
-      }
+      await updateDoc(doc(db, "students", id), editedData);
+      setStudents((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, ...editedData } : s))
+      );
+      toast.success("O‘quvchi yangilandi!");
+      setEditingStudentId(null);
     } catch (error) {
-      console.error("Tahrirlashda xatolik:", error);
-      toast.error("Tahrirlashda xatolik!", {
-        style: { fontSize: "16px" }, 
-      });
+      toast.error("Xatolik yuz berdi!");
     }
   };
 
-  const confirmStudent = async (student) => {
+  const handleCancelEdit = () => {
+    setEditingStudentId(null);
+  };
+
+  const handleConfirmStudent = (student) => {
+    setSelectedTeacher("");
+    setLessonTime(""); // Reset lesson time
+    setCurrentStudent(student);
+    setIsConfirmModalOpen(true);
+  };
+
+  const handleTeacherAssign = async () => {
+    if (!selectedTeacher) {
+      toast.error("Iltimos, o‘qituvchi tanlang!");
+      return;
+    }
+    if (!lessonTime.trim()) {
+      toast.error("Iltimos, dars vaqtini kiriting!");
+      return;
+    }
+
     try {
-      await setDoc(doc(db, "confirmedStudents", student.id), {
-        fullName: student.fullName,
-        subject: student.subject,
-        phone: student.phone,
+      await setDoc(doc(db, "confirmedStudents", currentStudent.id), {
+        fullName: currentStudent.fullName,
+        subject: currentStudent.subject,
+        phone: currentStudent.phone,
+        teacher: selectedTeacher,
+        lessonTime: lessonTime,
       });
 
-      await deleteDoc(doc(db, "students", student.id));
-      setStudents((prev) => prev.filter((s) => s.id !== student.id));
-      toast.success("O‘quvchi tasdiqlandi!", {
-        style: { fontSize: "16px" }, 
-      });
+      await deleteDoc(doc(db, "students", currentStudent.id));
+      setStudents((prev) =>
+        prev.filter((s) => s.id !== currentStudent.id)
+      );
+
+      toast.success("O‘quvchi tasdiqlandi va o‘qituvchi biriktirildi!");
+      setIsConfirmModalOpen(false);
+      setCurrentStudent(null);
     } catch (error) {
-      console.error("Tasdiqlashda xatolik:", error);
-      toast.error("Tasdiqlashda xatolik!", {
-        style: { fontSize: "16px" }, 
-      });
+      toast.error("Tasdiqlashda xatolik yuz berdi!");
     }
   };
 
-  const deleteStudent = async (studentId) => {
-    try {
-      await deleteDoc(doc(db, "students", studentId));
-      setStudents((prev) => prev.filter((s) => s.id !== studentId));
-      toast.success("O‘quvchi o‘chirildi!", {
-        style: { fontSize: "16px" }, 
-      });
-    } catch (error) {
-      console.error("O‘chirishda xatolik:", error);
-      toast.error("O‘chirishda xatolik!", {
-        style: { fontSize: "16px" }, 
-      });
-    }
-  };
-
+  // Fetch teacher's schedule when teacher is selected
   useEffect(() => {
-    fetchStudents();
-  }, []);
+    if (selectedTeacher && currentStudent) {
+      const teacher = subjects
+        .find((subject) => subject.name === currentStudent.subject)
+        ?.teachers.find((teacher) => teacher.name === selectedTeacher);
 
-  if (loading) return <Loader />;
+      if (teacher && teacher.schedule) {
+        setTeacherSchedule(teacher.schedule);
+      } else {
+        setTeacherSchedule([]); // If no schedule found, reset
+      }
+    }
+  }, [selectedTeacher, currentStudent, subjects]);
 
   return (
-    <div className="p-4 max-w-5xl mx-auto flex flex-col ">
-      <h2 className="text-3xl font-bold mb-6 text-white self-center">Tasdiqlanmagan O'quvchilar</h2>
-      <ul className="space-y-6">
-        {students.map((student) => (
-          <li
-            key={student.id}
-            className="bg-white text-xl rounded-2xl p-5 shadow-md flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4"
-          >
-            <div className="flex flex-col gap-4">
-              <p className="text-xl">
-                <span className="font-semibold text-gray-700">Ism Familya:</span>{" "}
-                {student.fullName}
-              </p>
-              <p className="text-xl">
-                <span className="font-semibold text-gray-700">Fan:</span>{" "}
-                {student.subject}
-              </p>
-              <p className="text-xl">
-                <span className="font-semibold text-gray-700">Tel:</span>{" "}
-                {student.phone}
-              </p>
-            </div>
-            <div className="flex gap-3 flex-wrap">
+    <div className="p-4 text-2xl">
+      <h2 className="text-2xl font-bold mb-4">O‘quvchilar ro‘yxati</h2>
+      <div className="overflow-x-auto">
+        <table className="min-w-full bg-white border border-gray-300">
+          <thead>
+            <tr className="bg-gray-100 text-center">
+              <th className="py-2 px-4 border-b">#</th>
+              <th className="py-2 px-4 border-b">F.I.Sh</th>
+              <th className="py-2 px-4 border-b">Fan</th>
+              <th className="py-2 px-4 border-b">Telefon</th>
+              <th className="py-2 px-4 border-b">Amallar</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map((student, index) => (
+              <tr key={student.id} className="border-b text-center">
+                <td className="py-2 px-4">{index + 1}</td>
+
+                {editingStudentId === student.id ? (
+                  <>
+                    <td className="py-2 px-4">
+                      <input
+                        type="text"
+                        value={editedData.fullName}
+                        onChange={(e) =>
+                          setEditedData({ ...editedData, fullName: e.target.value })
+                        }
+                        className="border px-2 py-1 rounded w-full"
+                      />
+                    </td>
+                    <td className="py-2 px-4">
+                      <select
+                        value={editedData.subject}
+                        onChange={(e) =>
+                          setEditedData({ ...editedData, subject: e.target.value })
+                        }
+                        className="border px-2 py-1 rounded w-full"
+                      >
+                        <option value="">Fan tanlang</option>
+                        {subjects.map((subject, index) => (
+                          <option key={index} value={subject.name}>
+                            {subject.name}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td className="py-2 px-4">
+                      <input
+                        type="text"
+                        value={editedData.phone}
+                        onChange={(e) =>
+                          setEditedData({ ...editedData, phone: e.target.value })
+                        }
+                        className="border px-2 py-1 rounded w-full"
+                      />
+                    </td>
+                    <td className="py-2 px-4 space-x-2">
+                      <button
+                        onClick={() => handleSaveEdit(student.id)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-xl"
+                      >
+                        Saqlash
+                      </button>
+                      <button
+                        onClick={handleCancelEdit}
+                        className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded-xl"
+                      >
+                        Bekor
+                      </button>
+                    </td>
+                  </>
+                ) : (
+                  <>
+                    <td className="py-2 px-4">{student.fullName}</td>
+                    <td className="py-2 px-4">{student.subject}</td>
+                    <td className="py-2 px-4">{student.phone}</td>
+                    <td className="py-2 px-4 space-x-2">
+                      <button
+                        onClick={() => handleEdit(student)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-xl"
+                      >
+                        Tahrirlash
+                      </button>
+                      <button
+                        onClick={() => handleDelete(student.id)}
+                        className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-xl"
+                      >
+                        O‘chirish
+                      </button>
+                      <button
+                        onClick={() => handleConfirmStudent(student)}
+                        className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-xl"
+                      >
+                        Tasdiqlash
+                      </button>
+                    </td>
+                  </>
+                )}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {isConfirmModalOpen && (
+        <div className="fixed inset-0 bg-[rgba(0,0,0,0.8)] bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded-lg w-full max-w-[500px]">
+            <h3 className="text-xl font-bold mb-4">O‘quvchi tasdiqlash</h3>
+            <p className="mb-2">Iltimos, o‘qituvchini tanlang:</p>
+            <select
+              value={selectedTeacher}
+              onChange={(e) => setSelectedTeacher(e.target.value)}
+              className="border px-2 py-1 rounded mb-4 w-full"
+            >
+              <option value="">O‘qituvchi tanlang</option>
+              {subjects
+                .filter((subject) => subject.name === currentStudent.subject)
+                .flatMap((subject) => subject.teachers)
+                .map((teacher, index) => (
+                  <option key={index} value={teacher.name}>
+                    {teacher.name}
+                  </option>
+                ))}
+            </select>
+
+            <p className="mb-2">Iltimos, dars vaqtini tanlang:</p>
+            <select
+              value={lessonTime}
+              onChange={(e) => setLessonTime(e.target.value)}
+              className="border px-2 py-1 rounded mb-4 w-full"
+            >
+              <option value="">Dars vaqtini tanlang</option>
+              {teacherSchedule.map((time, index) => (
+                <option key={index} value={time}>
+                  {time}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex justify-end space-x-2">
               <button
-                onClick={() => confirmStudent(student)}
-                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-2xl transition"
+                onClick={handleTeacherAssign}
+                className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-xl"
               >
                 Tasdiqlash
               </button>
               <button
-                onClick={() => deleteStudent(student.id)}
-                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-2xl transition"
+                onClick={() => setIsConfirmModalOpen(false)}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-xl"
               >
-                O‘chirish
-              </button>
-              <button
-                onClick={() => handleEdit(student)}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-2xl transition"
-              >
-                Tahrirlash
+                Yopish
               </button>
             </div>
-          </li>
-        ))}
-      </ul>
-
-      {editingStudent && (
-        <div className="mt-10 p-6 bg-white rounded-2xl shadow-lg">
-          <h3 className="text-2xl font-bold mb-6 text-blue-700">Tahrir qilish</h3>
-          <div className="space-y-5">
-            <div>
-              <label className="block text-gray-600 mb-1 font-medium">
-                Ism Familya
-              </label>
-              <input
-                type="text"
-                value={editedFullName}
-                onChange={(e) => setEditedFullName(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <div>
-              <label className="block text-gray-600 mb-1 font-medium">Fan</label>
-              <select
-                value={editedSubject}
-                onChange={(e) => setEditedSubject(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-              >
-                {subjects.map((subject, index) => (
-                  <option key={index} value={subject}>
-                    {subject}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-gray-600 mb-1 font-medium">Telefon</label>
-              <input
-                type="text"
-                value={editedPhone}
-                onChange={(e) => setEditedPhone(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-300"
-              />
-            </div>
-            <button
-              onClick={handleSave}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl transition"
-            >
-              Saqlash
-            </button>
           </div>
         </div>
       )}
     </div>
   );
-};
-
-export default StudentsList;
+}

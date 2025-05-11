@@ -38,9 +38,9 @@ const AddStudent = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-[500px] w-full mx-auto p-10 bg-white shadow-2xl rounded-lg border border-gray-300 text-2xl flex flex-col gap-10"
+      className="max-w-[500px] w-full mx-auto p-10 bg-[rgba(0,0,255,0.1)] text-amber-50 shadow-2xl rounded-lg border border-gray-300 text-2xl flex flex-col gap-10"
     >
-      <h2 className="text-2xl font-semibold mb-6 text-center text-gray-800">
+      <h2 className="text-2xl font-semibold mb-6 text-center">
         Yangi O‘quvchi Qo‘shish
       </h2>
 
@@ -50,7 +50,7 @@ const AddStudent = () => {
           value={fullName}
           onChange={(e) => setFullName(e.target.value)}
           placeholder="Ism Familiya"
-          className="w-full border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-[rgba(0,0,255,0.8)] border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>
@@ -59,7 +59,7 @@ const AddStudent = () => {
         <select
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          className="w-full border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-[rgba(0,0,255,0.8)] border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         >
           <option value="">Fan tanlang</option>
@@ -68,6 +68,7 @@ const AddStudent = () => {
             <option value="Ingliz tili">Ingliz tili</option>
             <option value="Arab tili">Arab tili</option>
             <option value="Nemis tili">Nemis tili</option>
+            <option value="Rus tili">Rus tili</option>
           </optgroup>
           <optgroup label="Matematika va Fanlar">
             <option value="Matematika">Matematika</option>
@@ -90,7 +91,7 @@ const AddStudent = () => {
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Telefon raqami"
-          className="w-full border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full bg-[rgba(0,0,255,0.8)] border-gray-300 p-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           required
         />
       </div>

@@ -115,6 +115,7 @@ const StudentPage = () => {
         <p className="text-2xl"><strong className="text-xl">Ism Familiya:</strong> {student.fullName}</p>
         <p className="text-2xl"><strong className="text-xl">Fan:</strong> {student.subject}</p>
         <p className="text-2xl"><strong className="text-xl">Telefon:</strong> {student.phone}</p>
+        <p className="text-2xl"><strong className="text-xl">O'qituvchi:</strong> {student.teacher}</p>
       </div>
 
       <h3 className="text-2xl font-semibold text-gray-900 mt-8">To'lovlar</h3>
