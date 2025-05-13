@@ -125,6 +125,11 @@ const StudentPage = () => {
             <div>
               <p className="font-medium text-xl">{payment.month} {payment.year}:</p>
               <p className="text-lg">{payment.amount.toLocaleString()} so'm - {payment.paid ? "To'langan" : "To'lanmagan"}</p>
+              {payment.date && (
+                <p className="text-sm text-gray-500">
+                  To'lov sanasi: {new Date(payment.date.seconds * 1000).toLocaleString()}
+                </p>
+              )}
             </div>
             <div className="flex space-x-2">
               <button
@@ -133,7 +138,6 @@ const StudentPage = () => {
               >
                 Tahrirlash
               </button>
-             
             </div>
           </li>
         ))}
@@ -214,9 +218,6 @@ const StudentPage = () => {
           </div>
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
-      
     </div>
   );
 };

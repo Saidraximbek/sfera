@@ -21,6 +21,7 @@ const Confirm = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
   const [subjects, setSubjects] = useState([]);
+  const [filteredSubject, setFilteredSubject] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,12 +75,19 @@ const Confirm = () => {
     }
   };
 
+  const filteredStudents = filteredSubject
+    ? students.filter((s) => s.subject === filteredSubject)
+    : students;
+
   return (
-    <div className="overflow-x-auto p-6 bg-amber-50 transition duration-300 ease-in-out transform">
+    <div className="overflow-x-auto p-6 rounded-2xl bg-amber-50 transition duration-300 ease-in-out transform">
       <h2 className="text-2xl font-bold mb-4 text-gray-800">Tasdiqlangan o‘quvchilar</h2>
+
       <div className="mb-4">
-        {/* Fanlar bo'yicha filtr */}
-        <select className="border px-4 py-2 rounded-md text-base" onChange={(e) => setFilteredSubject(e.target.value)}>
+        <select
+          className="border px-4 py-2 rounded-md text-base"
+          onChange={(e) => setFilteredSubject(e.target.value)}
+        >
           <option value="">Barchasi</option>
           {subjects.map((subject) => (
             <option key={subject.id} value={subject.name}>
@@ -88,6 +96,7 @@ const Confirm = () => {
           ))}
         </select>
       </div>
+
       <table className="table-auto w-full text-lg">
         <thead>
           <tr className="bg-gray-200 text-gray-700">
@@ -99,13 +108,13 @@ const Confirm = () => {
           </tr>
         </thead>
         <tbody>
-          {students.map((student) => (
+          {filteredStudents.map((student) => (
             <tr
               key={student.id}
               className="border-t hover:bg-gray-100 transition-all duration-300 ease-in-out"
             >
               {editStudentId === student.id ? (
-                <tr>
+                <>
                   <td className="py-3 px-6">
                     <input
                       type="text"
@@ -187,7 +196,7 @@ const Confirm = () => {
                       Bekor
                     </button>
                   </td>
-                </tr>
+                </>
               ) : (
                 <>
                   <td className="py-3 px-6">{student.fullName}</td>
@@ -226,7 +235,6 @@ const Confirm = () => {
         </tbody>
       </table>
 
-      {/* O'chirish oynasi */}
       {showDeleteModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
           <div className="bg-white p-6 rounded shadow-md w-full max-w-md transition-all duration-300 ease-in-out transform scale-105">

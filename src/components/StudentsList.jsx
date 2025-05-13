@@ -138,8 +138,8 @@ export default function StudentsList() {
   }, [selectedTeacher, currentStudent, subjects]);
 
   return (
-    <div className="p-4 text-2xl">
-      <h2 className="text-2xl font-bold mb-4">O‘quvchilar ro‘yxati</h2>
+    <div className=" text-2xl">
+    
       <div className="overflow-x-auto">
         <table className="min-w-full bg-white border border-gray-300">
           <thead>

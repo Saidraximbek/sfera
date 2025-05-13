@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/config";
-
+import { useNavigate } from "react-router-dom";
 const Groups = () => {
   const [teachers, setTeachers] = useState([]);
   const [students, setStudents] = useState([]);
   const [selectedTeacher, setSelectedTeacher] = useState(""); // Default value is empty
   const [filteredStudents, setFilteredStudents] = useState([]); // Filtered students based on selected teacher
-
+  const navigate = useNavigate()
   const fetchTeachers = async () => {
     const snapshot = await getDocs(collection(db, "subjects"));
     const allTeachers = [];
@@ -40,15 +40,16 @@ const Groups = () => {
 
   useEffect(() => {
     if (selectedTeacher) {
-      // Filter students based on selected teacher
-      const filtered = students.filter((student) => student.teacher === selectedTeacher);
+      const filtered = students.filter(
+        (student) => student.teacher === selectedTeacher
+      );
       setFilteredStudents(filtered);
     }
   }, [selectedTeacher, students]);
 
   return (
     <div className="max-w-10xl mx-auto px-4 py-12 bg-amber-50 rounded-2xl">
-      <h1 className="text-5xl font-bold text-center text-gray-800 mb-12">
+      <h1 className="text-3xl font-bold text-center text-gray-800 mb-12">
         O‘qituvchilar Guruhlari
       </h1>
 
@@ -81,7 +82,14 @@ const Groups = () => {
             {filteredStudents.map((student) => (
               <tr key={student.id} className="border-t border-gray-200">
                 <td className="px-4 py-2">
-                  <span className="font-semibold">{student.fullName}</span>{" "}
+                  <span
+                    className="font-semibold"
+                    onClick={() =>
+                      navigate(`/student/${student.id}`, { state: student })
+                    }
+                  >
+                    {student.fullName}
+                  </span>{" "}
                   <span className="text-gray-500">({student.subject})</span>
                 </td>
                 <td className="px-4 py-2">
@@ -96,9 +104,13 @@ const Groups = () => {
           </tbody>
         </table>
       ) : selectedTeacher ? (
-        <p className="text-gray-500 mt-2 text-xl">Hozircha o‘quvchi biriktirilmagan.</p>
+        <p className="text-gray-500 mt-2 text-xl">
+          Hozircha o‘quvchi biriktirilmagan.
+        </p>
       ) : (
-        <p className="text-gray-500 mt-2 text-xl">Iltimos, o‘qituvchi tanlang.</p>
+        <p className="text-gray-500 mt-2 text-xl">
+          Iltimos, o‘qituvchi tanlang.
+        </p>
       )}
     </div>
   );

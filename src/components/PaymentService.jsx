@@ -1,4 +1,3 @@
-// PaymentService.js
 import { doc, getDoc, setDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import { db } from "../firebase/config";
 
@@ -7,14 +6,23 @@ export const addPayment = async (studentId, month, year, amount) => {
     const paymentRef = doc(db, "payments", studentId);
     const paymentSnap = await getDoc(paymentRef);
 
+    const paymentDate = new Date();
+    const newPayment = {
+      month,
+      year,
+      amount,
+      paid: true,
+      date: { seconds: Math.floor(paymentDate.getTime() / 1000) } // To'g'ri formatlash
+    };
+
     if (paymentSnap.exists()) {
       const data = paymentSnap.data();
       await updateDoc(paymentRef, {
-        payments: arrayUnion({ month, year, amount, paid: true })
+        payments: arrayUnion(newPayment)
       });
     } else {
       await setDoc(paymentRef, {
-        payments: [{ month, year, amount, paid: true }]
+        payments: [newPayment]
       });
     }
   } catch (error) {
@@ -43,7 +51,7 @@ export const updatePayment = async (studentId, month, year, newAmount) => {
   }
 };
 
-export const deletePayment = async (studentId, month, year, amount) => {
+export const deletePayment = async (studentId, month, year) => {
   try {
     const paymentRef = doc(db, "payments", studentId);
     const paymentSnap = await getDoc(paymentRef);
@@ -51,10 +59,7 @@ export const deletePayment = async (studentId, month, year, amount) => {
     if (paymentSnap.exists()) {
       const data = paymentSnap.data();
       const filteredPayments = data.payments.filter(
-        (payment) =>
-          !(payment.month === month &&
-            payment.year === year &&
-            payment.amount === amount)
+        (payment) => !(payment.month === month && payment.year === year)
       );
 
       await setDoc(paymentRef, { ...data, payments: filteredPayments });

@@ -12,8 +12,8 @@ const Sidebar = () => {
     <div className="w-[100%] max-w-[250px] py-10 px-4 flex flex-col gap-8 sm:w-15 md:w-80 lg:w-100">
       {/* Logo */}
       <div className="flex items-center gap-1 text-3xl mb-10 sm:text-[12px]">
-        <img src="./sfera.svg" alt="sfera logo" width={75} />
-        <h2 className="font-serif text-white sfera-logo hidden sm:block">Sfera</h2>
+        <img src="./sfera.svg" alt="sfera logo" width={125} />
+        <h2 className="font-serif text-white sfera-logo hidden text-4xl sm:block">Sfera</h2>
       </div>
 
       {/* Navigation links */}
