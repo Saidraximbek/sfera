@@ -123,10 +123,10 @@ const StudentPage = () => {
         {payments.map((payment, index) => (
           <li key={index} className="flex justify-between items-center bg-gray-50 p-4 rounded-lg shadow-sm">
             <div>
-              <p className="font-medium text-xl">{payment.month} {payment.year}:</p>
-              <p className="text-lg">{payment.amount.toLocaleString()} so'm - {payment.paid ? "To'langan" : "To'lanmagan"}</p>
+              <span className="font-bold text-xl">{payment.month} {payment.year}:</span>
+              <p className="text-xl font-bold">{payment.amount.toLocaleString()} so'm  {payment.paid ? <p className="text-green-600">To'langan</p> : <p className="text-red-800">To'lanmagan</p>}</p>
               {payment.date && (
-                <p className="text-sm text-gray-500">
+                <p className="text-xl font-medium text-gray-500">
                   To'lov sanasi: {new Date(payment.date.seconds * 1000).toLocaleString()}
                 </p>
               )}
